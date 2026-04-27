@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "denoiser"
+version = "0.1.0"
+description = ""
+authors = [{name = "Michael George"}]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.4.0",
+]
+
+[tool.ruff]
+line-length = 64
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
