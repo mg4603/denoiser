@@ -19,7 +19,7 @@ Follow conventional commits:
 
 ## Pull Requests
 
-1. Branch off meain
+1. Branch off main
 2. Make your changes
 3. Open a PR referencing the related issue
 4. PR title should follow the commit message format
