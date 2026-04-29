@@ -14,7 +14,17 @@ def extract_audio(video_path: Path, wav_path: Path) -> None:
 def build_noise_profile(
     y: np_ndarray, sr: int, duration: float
 ) -> np_ndarray:
-    return y[: int(sr * duration)]
+    if sr <= 0:
+        raise ValueError(
+            "Sampling rate must be greater than 0."
+        )
+    if duration < 0:
+        raise ValueError(
+            "Duration must be greater than or equal to 0."
+        )
+    if int(sr) != sr:
+        raise TypeError("Sample rate must be an integer value.")
+    return y[: min(int(sr * duration), len(y))]
 
 
 def mux_audio(

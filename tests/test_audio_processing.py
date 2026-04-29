@@ -1,6 +1,8 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from numpy import arange, array_equal
 
 from denoiser.audio_processing import (
@@ -60,7 +62,7 @@ def test_mux_audio_success(
 
 
 def test_build_noise_profile_success():
-    y = arange(1000)
+    y = arange(1_000)
     sr = 100
     duration = 5
 
@@ -68,3 +70,82 @@ def test_build_noise_profile_success():
 
     assert len(noise_profile) == 500
     assert array_equal(noise_profile, y[:500])
+
+
+def test_build_noise_profile_zero_duration():
+    y = arange(1_000)
+    sr = 100
+    duration = 0
+
+    noise_profile = build_noise_profile(y, sr, duration)
+
+    assert len(noise_profile) == 0
+
+
+def test_build_noise_profile_rounding_behavior():
+    y = arange(1_000)
+    sr = 10
+    duration = 2.55
+
+    noise_profile = build_noise_profile(y, sr, duration)
+
+    assert len(noise_profile) == int(sr * duration)
+    assert array_equal(noise_profile, y[: int(sr * duration)])
+
+
+def test_build_noise_profile_negative_duration():
+    y = arange(1_000)
+    sr = 10
+    duration = -5
+
+    with pytest.raises(ValueError):
+        build_noise_profile(y, sr, duration)
+
+
+def test_build_noise_profile_empty_input():
+    y = arange(0)
+    sr = 10
+    duration = 5
+
+    noise_profile = build_noise_profile(y, sr, duration)
+
+    assert len(noise_profile) == 0
+
+
+def test_build_noise_profile_non_integer_sample_rate():
+    y = arange(1_000)
+    sr = 100.5
+    duration = 5
+
+    with pytest.raises(TypeError):
+        build_noise_profile(y, sr, duration)
+
+
+def test_build_noise_profile_dtype_preservation():
+    y = arange(1_000)
+    sr = 10
+    duration = 5
+
+    noise_profile = build_noise_profile(y, sr, duration)
+
+    assert y.dtype == noise_profile.dtype
+
+
+def test_build_noise_profile_negative_sample_rate():
+    y = arange(1_000)
+    sr = -10
+    duration = 5
+
+    with pytest.raises(ValueError):
+        build_noise_profile(y, sr, duration)
+
+
+def test_build_noise_profile_clamping_behavior():
+    y = arange(1_000)
+    sr = 1_000
+    duration = 5
+
+    noise_profile = build_noise_profile(y, sr, duration)
+
+    assert len(noise_profile) == 1_000
+    assert array_equal(noise_profile, y)
