@@ -40,9 +40,13 @@ def denoise(
 
         y, sr = load_audio(tmp_wav, sr=None)
 
-        noise_sample = build_noise_profile(
-            y, sr, noise_duration
-        )
+        try:
+            noise_sample = build_noise_profile(
+                y, sr, noise_duration
+            )
+        except ValueError as e:
+            typer.echo(e)
+            raise typer.Abort()
 
         y_denoised = reduce_noise(
             y=y,
