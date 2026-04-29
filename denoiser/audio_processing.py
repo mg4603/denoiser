@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from moviepy.editor import VideoFileClip, AudioFileClip
-
+from moviepy import AudioFileClip, VideoFileClip
 from numpy import ndarray as np_ndarray
 
 
