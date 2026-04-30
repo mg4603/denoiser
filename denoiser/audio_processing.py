@@ -6,6 +6,9 @@ from numpy import ndarray as np_ndarray
 
 def extract_audio(video_path: Path, wav_path: Path) -> None:
     video = VideoFileClip(str(video_path))
+    if video.audio is None:
+        raise ValueError("Video file has no audio track")
+
     video.audio.write_audiofile(
         str(wav_path), verbose=False, logger=None
     )

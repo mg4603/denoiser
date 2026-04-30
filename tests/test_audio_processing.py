@@ -2,7 +2,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from numpy import arange, array_equal
 
 from denoiser.audio_processing import (
@@ -27,6 +26,21 @@ def test_extract_audio_success(mock_video_clip):
     audio.write_audiofile.assert_called_once_with(
         str(output_wav), verbose=False, logger=None
     )
+
+
+@patch("denoiser.audio_processing.VideoFileClip")
+def test_extract_audio_audio_is_none(mock_video_clip):
+    video_instance = MagicMock()
+    video_instance.audio = None
+    mock_video_clip.return_value = video_instance
+
+    video_path = Path("input.mp4")
+    output_wav = Path("output.wav")
+
+    with pytest.raises(ValueError):
+        extract_audio(video_path, output_wav)
+
+    mock_video_clip.assert_called_once_with(str(video_path))
 
 
 @patch("denoiser.audio_processing.AudioFileClip")
