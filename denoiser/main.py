@@ -2,7 +2,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import typer
-from liberosa import load as load_audio
+from librosa import load as load_audio
 from noisereduce import reduce_noise
 from soundfile import write as save_audio
 
