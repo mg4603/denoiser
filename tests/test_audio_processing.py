@@ -9,6 +9,7 @@ from denoiser.audio_processing import (
     extract_audio,
     mux_audio,
 )
+from tempfile import TemporaryDirectory
 
 
 @patch("denoiser.audio_processing.VideoFileClip")
@@ -57,22 +58,138 @@ def test_mux_audio_success(
     mock_audio_clip.return_value = audio_instance
     video_instance.set_audio.return_value = final_video
 
-    video_path = Path("input.mp4")
-    clean_wav = Path("clean.wav")
-    output_path = Path("output.mp4")
+    with TemporaryDirectory() as tempdir:
+        video_path = Path(tempdir) / "input.mp4"
+        with video_path.open("wb") as v:
+            v.write(bytearray(100))
 
-    mux_audio(video_path, clean_wav, output_path)
+        clean_wav = Path(tempdir) / "clean.wav"
+        with clean_wav.open("wb") as c:
+            c.write(bytearray(100))
 
-    mock_video_clip.assert_called_once_with(str(video_path))
-    mock_audio_clip.assert_called_once_with(str(clean_wav))
+        output_path = Path(tempdir) / "output.mp4"
 
-    video_instance.set_audio.assert_called_once_with(
-        audio_instance
-    )
+        mux_audio(video_path, clean_wav, output_path)
 
-    final_video.write_videofile.assert_called_once_with(
-        str(output_path), codec="libx264", audio_codec="aac"
-    )
+        mock_video_clip.assert_called_once_with(str(video_path))
+        mock_audio_clip.assert_called_once_with(str(clean_wav))
+
+        video_instance.set_audio.assert_called_once_with(
+            audio_instance
+        )
+
+        final_video.write_videofile.assert_called_once_with(
+            str(output_path), codec="libx264", audio_codec="aac"
+        )
+
+
+def test_mux_audio_video_path_type_error():
+    video_path = "video/path"
+    clean_wav = Path("clean/wav")
+    output_path = Path("output/path")
+
+    with pytest.raises(TypeError):
+        mux_audio(video_path, clean_wav, output_path)
+
+
+def test_mux_audio_clean_wav_type_error():
+    video_path = Path("video/path")
+    clean_wav = "clean/wav"
+    output_path = Path("output/path")
+
+    with pytest.raises(TypeError):
+        mux_audio(video_path, clean_wav, output_path)
+
+
+def test_mux_audio_output_path_type_error():
+    video_path = Path("video/path")
+    clean_wav = Path("clean/wav")
+    output_path = "output/path"
+
+    with pytest.raises(TypeError):
+        mux_audio(video_path, clean_wav, output_path)
+
+
+def test_mux_audio_video_file_does_not_exist():
+    with TemporaryDirectory() as tmpdir:
+        video_path = Path(tmpdir) / "video"
+        clean_wav = Path(tmpdir) / "clean_wav"
+        output_path = Path(tmpdir) / "output"
+
+        with pytest.raises(FileNotFoundError) as exec_info:
+            mux_audio(video_path, clean_wav, output_path)
+
+        assert (
+            str(exec_info.value) == "Video file does not exist"
+        )
+
+
+def test_mux_audio_clean_wav_does_not_exist():
+    with TemporaryDirectory() as tmpdir:
+        video_path = Path(tmpdir) / "video"
+        with video_path.open("wb") as v:
+            v.write(bytearray(100))
+        clean_wav = Path(tmpdir) / "clean_wav"
+        output_path = Path(tmpdir) / "output"
+
+        with pytest.raises(FileNotFoundError) as exec_info:
+            mux_audio(video_path, clean_wav, output_path)
+
+        assert (
+            str(exec_info.value)
+            == "Clean audio file does not exist"
+        )
+
+
+def test_mux_audio_video_file_of_invalid_type():
+    with TemporaryDirectory() as tmpdir:
+        video_path = Path(tmpdir) / "video"
+        with video_path.open("wb") as v:
+            v.write(bytearray(100))
+
+        clean_wav = Path(tmpdir) / "clean_wav"
+        with clean_wav.open("wb") as c:
+            c.write(bytearray(100))
+
+        output_path = Path(tmpdir) / "output"
+
+        with pytest.raises(ValueError) as exec_info:
+            mux_audio(video_path, clean_wav, output_path)
+
+        assert (
+            str(exec_info.value)
+            == "Invalid file type for video file"
+        )
+
+
+@patch("denoiser.audio_processing.AudioFileClip")
+@patch("denoiser.audio_processing.VideoFileClip")
+def test_mux_audio_invalid_audio_file_type(
+    mock_video_clip, mock_audio_clip
+):
+    video_instance = MagicMock()
+
+    mock_video_clip.return_value = video_instance
+    mock_audio_clip.side_effect = OSError("Invalid File Type")
+
+    with TemporaryDirectory() as tmpdir:
+        video_path = Path(tmpdir) / "video"
+        with video_path.open("wb") as v:
+            v.write(bytearray(100))
+
+        clean_wav = Path(tmpdir) / "clean_wav"
+        with clean_wav.open("wb") as c:
+            c.write(bytearray(100))
+
+        output_path = Path(tmpdir) / "output"
+
+        with pytest.raises(ValueError) as exec_info:
+            mux_audio(video_path, clean_wav, output_path)
+
+        assert (
+            str(exec_info.value)
+            == "Invalid file type for clean audio"
+        )
 
 
 def test_build_noise_profile_success():
