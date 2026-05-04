@@ -1,22 +1,33 @@
-# denoiser
+denoiser
 
-> Short description of what this project does.
+A CLI tool for removing background audio noise from video files, delivering cleaner sound without a complex setup.
+Features
 
-## Installation
-```bash
+    Removes background noise and hiss from video audio tracks
+    Simple command-line interface for fast, scriptable workflows
+    Supports common video formats MP4(.mp4), AVI(.avi), MOV(.mov), MKV(.mkv), WMV(.wmv), FLV(.flv), MPEG(.mpeg), WebM(.webm)
+
+Requirements
+
+    Python 3.9+
+    ffmpeg
+    MoviePy
+
+Installation
+
 pip install denoiser
-```
 
-## Usage
-```bash
+Usage
+
 denoiser --help
-````
 
-## Development
+Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and
-contribution guidelines.
+See CONTRIBUTING.md for setup and contribution guidelines.
+Acknowledgements
 
-## License
+    MoviePy — video processing library used under the hood
+
+License
 
 Michael George - MIT
