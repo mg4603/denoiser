@@ -33,9 +33,45 @@ def build_noise_profile(
 def mux_audio(
     video_path: Path, clean_wav: Path, output_path: Path
 ):
-    video = VideoFileClip(str(video_path))
-    clean_audio = AudioFileClip(str(clean_wav))
-    final = video.set_audio(clean_audio)
-    final.write_videofile(
-        str(output_path), codec="libx264", audio_codec="aac"
-    )
+    if not isinstance(video_path, Path):
+        raise TypeError("video_path should be of type Path")
+
+    if not isinstance(clean_wav, Path):
+        raise TypeError("clean_wav should be of type Path")
+
+    if not isinstance(output_path, Path):
+        raise TypeError("output_path should be of type Path")
+
+    if not video_path.exists():
+        raise FileNotFoundError("Video file does not exist")
+
+    if not clean_wav.exists():
+        raise FileNotFoundError(
+            "Clean audio file does not exist"
+        )
+
+    video = None
+    clean_audio = None
+    try:
+        video = VideoFileClip(str(video_path))
+    except (OSError, IOError):
+        raise ValueError("Invalid file type for video file")
+
+    try:
+        clean_audio = AudioFileClip(str(clean_wav))
+    except (OSError, IOError):
+        raise ValueError("Invalid file type for clean audio")
+
+    try:
+        with video, clean_audio:
+            final = video.set_audio(clean_audio)
+            final.write_videofile(
+                str(output_path),
+                codec="libx264",
+                audio_codec="aac",
+            )
+    finally:
+        if video is not None:
+            video.close()
+        if clean_audio is not None:
+            clean_audio.close()
