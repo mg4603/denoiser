@@ -32,6 +32,13 @@ def denoise(
         1.0, help="Noise reduction aggressiveness (0-1)"
     ),
 ):
+    if output.exists():
+        overwrite = typer.confirm(
+            f"{output} already exists. Overwrite?"
+        )
+        if not overwrite:
+            raise typer.Abort()
+
     with Path(TemporaryDirectory()) as tmp_dir:
         tmp_wav = tmp_dir / "audio.wav"
         clean_wav = tmp_dir / "clean.wav"
