@@ -1,4 +1,5 @@
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -9,7 +10,6 @@ from denoiser.audio_processing import (
     extract_audio,
     mux_audio,
 )
-from tempfile import TemporaryDirectory
 
 
 @patch("denoiser.audio_processing.VideoFileClip")
@@ -19,14 +19,18 @@ def test_extract_audio_success(mock_video_clip):
     video_instance.audio = audio
     mock_video_clip.return_value = video_instance
 
-    video_path = Path("input.mp4")
-    output_wav = Path("output.wav")
-    extract_audio(video_path, output_wav)
+    with TemporaryDirectory() as tempdir:
+        video_path = Path(tempdir) / "input.mp4"
+        with video_path.open("wb") as v:
+            v.write(bytearray(100))
 
-    mock_video_clip.assert_called_once_with(str(video_path))
-    audio.write_audiofile.assert_called_once_with(
-        str(output_wav), verbose=False, logger=None
-    )
+        output_wav = Path("output.wav")
+        extract_audio(video_path, output_wav)
+
+        mock_video_clip.assert_called_once_with(str(video_path))
+        audio.write_audiofile.assert_called_once_with(
+            str(output_wav), verbose=False, logger=None
+        )
 
 
 @patch("denoiser.audio_processing.VideoFileClip")
@@ -35,13 +39,68 @@ def test_extract_audio_audio_is_none(mock_video_clip):
     video_instance.audio = None
     mock_video_clip.return_value = video_instance
 
-    video_path = Path("input.mp4")
-    output_wav = Path("output.wav")
+    with TemporaryDirectory() as tempdir:
+        video_path = Path(tempdir) / "input.mp4"
+        with video_path.open("wb") as v:
+            v.write(bytearray(100))
 
-    with pytest.raises(ValueError):
-        extract_audio(video_path, output_wav)
+        output_wav = Path("output.wav")
 
-    mock_video_clip.assert_called_once_with(str(video_path))
+        with pytest.raises(ValueError):
+            extract_audio(video_path, output_wav)
+
+        mock_video_clip.assert_called_once_with(str(video_path))
+
+
+def test_extract_audio_video_path_type_error():
+    video_path = "video/path"
+    wav_path = Path("wav/path")
+
+    with pytest.raises(TypeError) as exec_info:
+        extract_audio(video_path, wav_path)
+
+    assert (
+        str(exec_info.value)
+        == "video_path should be of type path"
+    )
+
+
+def test_extract_audio_wav_path_type_error():
+    video_path = Path("video/path")
+    wav_path = "wav/path"
+
+    with pytest.raises(TypeError) as exec_info:
+        extract_audio(video_path, wav_path)
+
+    assert (
+        str(exec_info.value)
+        == "wav_path should be of type path"
+    )
+
+
+def test_extract_audio_video_file_not_found():
+    video_path = Path("video/path")
+    wav_path = Path("wav/path")
+
+    with pytest.raises(FileNotFoundError) as exec_info:
+        extract_audio(video_path, wav_path)
+    assert str(exec_info.value) == "Video file does not exist"
+
+
+def test_extract_audio_video_clip_parse_fails():
+    with TemporaryDirectory() as tmpdir:
+        video_path = Path(tmpdir) / "video"
+        with video_path.open("wb") as v:
+            v.write(bytearray(100))
+
+        wav_path = Path(tmpdir) / "wav"
+
+        with pytest.raises(ValueError) as exec_info:
+            extract_audio(video_path, wav_path)
+        assert (
+            str(exec_info.value)
+            == "Invalid file type for video file"
+        )
 
 
 @patch("denoiser.audio_processing.AudioFileClip")
