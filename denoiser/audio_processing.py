@@ -5,13 +5,31 @@ from numpy import ndarray as np_ndarray
 
 
 def extract_audio(video_path: Path, wav_path: Path) -> None:
-    video = VideoFileClip(str(video_path))
-    if video.audio is None:
-        raise ValueError("Video file has no audio track")
+    if not isinstance(video_path, Path):
+        raise TypeError("video_path should be of type path")
 
-    video.audio.write_audiofile(
-        str(wav_path), verbose=False, logger=None
-    )
+    if not isinstance(wav_path, Path):
+        raise TypeError("wav_path should be of type path")
+
+    if not video_path.exists():
+        raise FileNotFoundError("Video file does not exist")
+
+    video = None
+    try:
+        video = VideoFileClip(str(video_path))
+    except (OSError, IOError):
+        raise ValueError("Invalid file type for video file")
+
+    try:
+        if video.audio is None:
+            raise ValueError("Video file has no audio track")
+
+        video.audio.write_audiofile(
+            str(wav_path), verbose=False, logger=None
+        )
+    finally:
+        if video is not None:
+            video.close()
 
 
 def build_noise_profile(
