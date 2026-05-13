@@ -18,9 +18,11 @@ cleaner sound without a complex setup.
 - MoviePy
 
 ## Installation
-
+Clone the repo and install locally:
 ```bash
-pip install denoiser
+git clone https://github.com/mg4603/denoiser.git
+cd denoiser
+pipx install .
 ```
 
 ## Usage
