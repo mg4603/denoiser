@@ -39,9 +39,10 @@ def denoise(
         if not overwrite:
             raise typer.Abort()
 
-    with Path(TemporaryDirectory()) as tmp_dir:
-        tmp_wav = tmp_dir / "audio.wav"
-        clean_wav = tmp_dir / "clean.wav"
+    with TemporaryDirectory() as tempdir:
+        tempdir_path = Path(tempdir)
+        tmp_wav = tempdir_path / "audio.wav"
+        clean_wav = tempdir_path / "clean.wav"
 
         try:
             extract_audio(input_file, tmp_wav)
