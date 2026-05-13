@@ -69,6 +69,12 @@ def denoise(
 
         save_audio(clean_wav, y_denoised, sr)
 
-        mux_audio(input_file, clean_wav, output)
+        try:
+            mux_audio(input_file, clean_wav, output)
+
+        except Exception as e:
+            typer.echo(e)
+
+            raise typer.Abort()
 
         typer.echo(f"Saved: {output}")
