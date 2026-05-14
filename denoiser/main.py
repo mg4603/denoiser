@@ -48,7 +48,7 @@ def denoise(
             extract_audio(input_file, tmp_wav)
         except ValueError as e:
             typer.echo(e)
-            typer.Abort()
+            raise typer.Abort()
 
         y, sr = load_audio(tmp_wav, sr=None)
 
