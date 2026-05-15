@@ -39,15 +39,16 @@ def denoise(
         if not overwrite:
             raise typer.Abort()
 
-    with Path(TemporaryDirectory()) as tmp_dir:
-        tmp_wav = tmp_dir / "audio.wav"
-        clean_wav = tmp_dir / "clean.wav"
+    with TemporaryDirectory() as tempdir:
+        tempdir_path = Path(tempdir)
+        tmp_wav = tempdir_path / "audio.wav"
+        clean_wav = tempdir_path / "clean.wav"
 
         try:
             extract_audio(input_file, tmp_wav)
         except ValueError as e:
             typer.echo(e)
-            typer.Abort()
+            raise typer.Abort()
 
         y, sr = load_audio(tmp_wav, sr=None)
 
@@ -68,6 +69,12 @@ def denoise(
 
         save_audio(clean_wav, y_denoised, sr)
 
-        mux_audio(input_file, clean_wav, output)
+        try:
+            mux_audio(input_file, clean_wav, output)
+
+        except Exception as e:
+            typer.echo(e)
+
+            raise typer.Abort()
 
         typer.echo(f"Saved: {output}")
