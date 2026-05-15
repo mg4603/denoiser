@@ -96,9 +96,9 @@ def test_overwrite_guard_negative_confirm():
         assert result.exit_code == 1
         assert (
             f"{output_path} already exists. "
-            "Overwrite? [y/N]: "
-            "n\nAborted.\n" in result.output
+            "Overwrite? [y/N]: n\n" in result.output
         )
+        assert "Aborted." in result.output
 
     finally:
         Path(input_path).unlink(missing_ok=True)
