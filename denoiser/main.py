@@ -19,6 +19,12 @@ app = typer.Typer(
 )
 
 
+@app.callback(invoke_without_command=True)
+def show_help(ctx: typer.Context):
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+
+
 @app.command()
 def denoise(
     input_file: Path = typer.Argument(
