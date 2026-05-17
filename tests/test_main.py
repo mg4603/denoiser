@@ -45,6 +45,7 @@ def test_denoise_success():
             result = runner.invoke(
                 app,
                 [
+                    "denoise",
                     input_path,
                     output_path,
                     "--noise-duration",
@@ -84,6 +85,7 @@ def test_overwrite_guard_negative_confirm():
         result = runner.invoke(
             app,
             [
+                "denoise",
                 input_path,
                 output_path,
                 "--noise-duration",
@@ -136,6 +138,7 @@ def test_overwrite_guard_confirm():
             result = runner.invoke(
                 app,
                 [
+                    "denoise",
                     input_path,
                     output_path,
                     "--noise-duration",
@@ -184,6 +187,7 @@ def test_extract_audio_raises_error():
             result = runner.invoke(
                 app,
                 [
+                    "denoise",
                     input_path,
                     output_path,
                     "--noise-duration",
@@ -224,6 +228,7 @@ def test_build_noise_profile_raises_error():
             result = runner.invoke(
                 app,
                 [
+                    "denoise",
                     input_path,
                     output_path,
                     "--noise-duration",
@@ -273,6 +278,7 @@ def test_mux_audio_raises_error():
             result = runner.invoke(
                 app,
                 [
+                    "denoise",
                     input_path,
                     output_path,
                     "--noise-duration",
@@ -311,6 +317,7 @@ def test_non_existent_input_file():
         result = runner.invoke(
             app,
             [
+                "denoise",
                 input_path,
                 output_path,
                 "--noise-duration",
